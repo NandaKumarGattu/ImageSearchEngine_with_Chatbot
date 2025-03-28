@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Gallery with Smart Search</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f7;
+            color: #333;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: #f5f5f7;
+        }
+
+        .container {
+            position: relative;
+            min-height: 100vh;
+            max-width: 1300px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #724ae8;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .theme-toggle {
+            background-color: #333;
+        }
+
+        .theme-toggle i {
+            font-size: 20px;
+            color: #724ae8;
+        }
+
+        /* Chatbot toggle */
+        .chat-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #724ae8;
+            color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(114, 74, 232, 0.3);
+        }
+
+        .chat-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(114, 74, 232, 0.4);
+        }
+
+        .chat-toggle i {
+            font-size: 18px;
+        }
+
+        /* Search styling */
+        .search-container {
+            margin-bottom: 40px;
+        }
+
+        .search-box {
+            position: relative;
+            height: 55px;
+            max-width: 600px;
+            margin: 0 auto;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .search-box {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-box:focus-within {
+            box-shadow: 0 5px 20px rgba(114, 74, 232, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .search-box input {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            outline: none;
+            border: none;
+            background-color: #ffffff;
+            padding: 0 60px 0 25px;
+            color: #333;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .search-box input {
+            background-color: #2d2d2d;
+            color: #fff;
+        }
+
+        .search-box i {
+            position: absolute;
+            z-index: 2;
+            color: #724ae8;
+            top: 50%;
+            right: 20px;
+            font-size: 22px;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        .search-box .clear-search {
+            right: 55px;
+            color: #999;
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-box .clear-search.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .search-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 0 10px;
+            justify-content: center;
+        }
+
+        .search-tag {
+            background-color: #e9e4fd;
+            color: #724ae8;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        body.dark-mode .search-tag {
+            background-color: #3d3a4b;
+        }
+
+        .search-tag:hover {
+            background-color: #d3c7fc;
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode .search-tag:hover {
+            background-color: #4b465e;
+        }
+
+        /* Gallery styling */
+        .images-container {
+            position: relative;
+        }
+
+        .images {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            padding: 10px;
+        }
+
+        .image-box {
+            position: relative;
+            height: 350px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode .image-box {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-box:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark-mode .image-box:hover {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .image-box img {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-box:hover img {
+            transform: scale(1.1);
+        }
+
+        .image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 20px 15px;
+            color: #fff;
+        }
+
+        .image-overlay h6 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            text-transform: capitalize;
+        }
+
+        .image-overlay .tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .image-overlay .tag {
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background-color: rgba(114, 74, 232, 0.7);
+        }
+
+        /* Chatbot styling */
+        .chatbot-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            transform: translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .chatbot-container.active {
+            transform: translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .chatbot {
+            width: 350px;
+            height: 500px;
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        body.dark-mode .chatbot {
+            background-color: #2d2d2d;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .chatbot-header {
+            padding: 15px 20px;
+            background-color: #724ae8;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chatbot-title i {
+            font-size: 18px;
+        }
+
+        .chatbot-title h3 {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.2s ease;
+        }
+
+        .chatbot-close:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        .bot-message {
+            background-color: #f2f2f2;
+            border-top-left-radius: 5px;
+            align-self: flex-start;
+        }
+
+        body.dark-mode .bot-message {
+            background-color: #3d3d3d;
+        }
+
+        .user-message {
+            background-color: #724ae8;
+            color: white;
+            border-top-right-radius: 5px;
+            align-self: flex-end;
+        }
+
+        .chatbot-input {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        body.dark-mode .chatbot-input {
+            border-top: 1px solid #444;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        body.dark-mode .chatbot-input input {
+            background-color: #3d3d3d;
+            border: 1px solid #555;
+            color: white;
+        }
+
+        .chatbot-input input:focus {
+            border-color: #724ae8;
+            box-shadow: 0 0 0 2px rgba(114, 74, 232, 0.2);
+        }
+
+        .chatbot-input button {
+            background-color: #724ae8;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chatbot-input button:hover {
+            background-color: #6239d8;
+            transform: scale(1.05);
+        }
+
+        .chatbot-input button i {
+            font-size: 16px;
+        }
+
+        .bot-typing {
+            display: flex;
+            gap: 5px;
+            padding: 10px 15px;
+            background-color: #f2f2f2;
+            border-radius: 15px;
+            border-top-left-radius: 5px;
+            align-self: flex-start;
+            width: auto;
+        }
+
+        body.dark-mode .bot-typing {
+            background-color: #3d3d3d;
+        }
+
+        .bot-typing span {
+            width: 8px;
+            height: 8px;
+            background-color: #aaa;
+            border-radius: 50%;
+            animation: typing 1s infinite ease-in-out;
+        }
+
+        .bot-typing span:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .bot-typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .bot-typing span:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* Suggestion chips */
+        .suggestion-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .suggestion-chip {
+            background-color: #e9e4fd;
+            color: #724ae8;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        body.dark-mode .suggestion-chip {
+            background-color: #3d3a4b;
+        }
+
+        .suggestion-chip:hover {
+            background-color: #d3c7fc;
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode .suggestion-chip:hover {
+            background-color: #4b465e;
+        }
+
+        /* Animation classes */
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(20px); }
+        }
+
+        /* No results message */
+        .no-results {
+            width: 100%;
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 18px;
+            color: #666;
+            display: none;
+        }
+
+        body.dark-mode .no-results {
+            color: #aaa;
+        }
+
+        .no-results i {
+            font-size: 50px;
+            color: #724ae8;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        /* Footer styling */
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            color: #777;
+        }
+
+        body.dark-mode footer {
+            border-top: 1px solid #333;
+            color: #999;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .images {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+            }
+            
+            .image-box {
+                height: 280px;
+            }
+            
+            .search-box {
+                height: 50px;
+            }
+            
+            .search-box input {
+                font-size: 16px;
+            }
+
+            .chatbot-container {
+                right: 20px;
+                bottom: 20px;
+            }
+
+            .chatbot {
+                width: 320px;
+                height: 450px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .images {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 10px;
+            }
+            
+            .image-box {
+                height: 220px;
+            }
+            
+            .image-overlay h6 {
+                font-size: 16px;
+            }
+            
+            .image-overlay .tag {
+                font-size: 10px;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .header-actions {
+                align-self: flex-end;
+                margin-top: -35px;
+            }
+
+            .chatbot {
+                width: calc(100vw - 40px);
+                height: 400px;
+            }
+
+            .chatbot-container {
+                right: 20px;
+                left: 20px;
+                width: calc(100% - 40px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">MovieGallery</div>
+            <div class="header-actions">
+                <button class="chat-toggle" aria-label="Chat with us">
+                    <i class="fas fa-comments"></i>
+                </button>
+                <button class="theme-toggle" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" placeholder="Search for movies..." id="search-input">
+                <i class="fas fa-times clear-search"></i>
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="search-tags">
+                <div class="search-tag">All</div>
+                <div class="search-tag">Superhero</div>
+                <div class="search-tag">Space</div>
+                <div class="search-tag">Adventure</div>
+                <div class="search-tag">Romance</div>
+                <div class="search-tag">Comedy</div>
+                <div class="search-tag">Drama</div>
+            </div>
+        </div>
+
+        <div class="images-container">
+            <div class="images">
+                <div class="image-box" data-name="spiderman" data-tags="superhero action">
+                    <img src="images/spiderman.jpg" alt="Spiderman">
+                    <div class="image-overlay">
+                        <h6>Spiderman</h6>
+                        <div class="tags">
+                            <span class="tag">Superhero</span>
+                            <span class="tag">Action</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="joker" data-tags="villain drama">
+                    <img src="images/joker.jpg" alt="Joker">
+                    <div class="image-overlay">
+                        <h6>Joker</h6>
+                        <div class="tags">
+                            <span class="tag">Villain</span>
+                            <span class="tag">Drama</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="ironman" data-tags="superhero action">
+                    <img src="images/ironman.jpg" alt="Ironman">
+                    <div class="image-overlay">
+                        <h6>Iron Man</h6>
+                        <div class="tags">
+                            <span class="tag">Superhero</span>
+                            <span class="tag">Action</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="passenger" data-tags="space romance">
+                    <img src="images/passenger.jpg" alt="Passenger">
+                    <div class="image-overlay">
+                        <h6>Passenger</h6>
+                        <div class="tags">
+                            <span class="tag">Space</span>
+                            <span class="tag">Romance</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="space" data-tags="space adventure">
+                    <img src="images/space.jpg" alt="Space">
+                    <div class="image-overlay">
+                        <h6>The Space</h6>
+                        <div class="tags">
+                            <span class="tag">Space</span>
+                            <span class="tag">Adventure</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="spiderman" data-tags="superhero action">
+                    <img src="images/spiderman2.jpg" alt="Spiderman 2">
+                    <div class="image-overlay">
+                        <h6>Spiderman 2</h6>
+                        <div class="tags">
+                            <span class="tag">Superhero</span>
+                            <span class="tag">Action</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="universe" data-tags="space adventure">
+                    <img src="images/universe.jpg" alt="Universe">
+                    <div class="image-overlay">
+                        <h6>The Universe</h6>
+                        <div class="tags">
+                            <span class="tag">Space</span>
+                            <span class="tag">Adventure</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="spiderman" data-tags="superhero action">
+                    <img src="images/spiderman3.jpg" alt="Spiderman 3">
+                    <div class="image-overlay">
+                        <h6>Spiderman 3</h6>
+                        <div class="tags">
+                            <span class="tag">Superhero</span>
+                            <span class="tag">Action</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="holiday" data-tags="romance comedy">
+                    <img src="images/holiday.jpg" alt="Holiday">
+                    <div class="image-overlay">
+                        <h6>Holiday</h6>
+                        <div class="tags">
+                            <span class="tag">Romance</span>
+                            <span class="tag">Comedy</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="image-box" data-name="ironman" data-tags="superhero action">
+                    <img src="images/ironman2.jpg" alt="Ironman 2">
+                    <div class="image-overlay">
+                        <h6>Iron Man 2</h6>
+                        <div class="tags">
+                            <span class="tag">Superhero</span>
+                            <span class="tag">Action</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <p>No movies found. Try a different search term.</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 ImageGallery - All Rights Reserved</p>
+        </footer>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <div class="chatbot">
+            <div class="chatbot-header">
+                <div class="chatbot-title">
+                    <i class="fas fa-robot"></i>
+                    <h3>MovieBot</h3>
+                </div>
+                <button class="chatbot-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chatbot-messages">
+                <!-- Messages will be added here -->
+            </div>
+            <div class="chatbot-input">
+                <input type="text" placeholder="Type your message..." id="chatbot-input-field">
+                <button id="chatbot-send">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="imagechatbot.js"></script>
+</body>
+</html>
