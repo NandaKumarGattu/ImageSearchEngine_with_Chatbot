@@ -1,11 +1,11 @@
 # ImageSearchEngine_with_Chatbot
-Install Dependencies for Dackend:
+Install Dependencies for Backend:
 Goto your file path and open CMD.
 
 npm install express mongoose cors bcryptjs jsonwebtoken
 
 Run above one in your cmd.
-And run server.js file.
+And run server.js file in vscode.
 
 To see authentication data stored in Mongodb:
 First register and login.
